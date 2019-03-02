@@ -285,7 +285,25 @@ namespace bridgeit
 							break;
 						}
 
-						if (p.x != 0)
+						if (p.x % 2 == 1)
+						{
+							if (p.y > 1)
+							{
+								stack.push(gridArray[p.y - 2][p.x]);
+							}
+
+							if (p.y != BOARD_SIZE - 2)
+							{
+								stack.push(gridArray[p.y + 2][p.x]);
+							}
+						}
+
+						if (p.y % 2 == 0)
+						{
+							stack.push(gridArray[p.y][p.x + 2]);
+						}
+
+						if (p.x > 1)
 						{
 							stack.push(gridArray[p.y][p.x - 2]);						
 						}
@@ -300,7 +318,7 @@ namespace bridgeit
 							stack.push(gridArray[p.y - 1][p.x + 1]);
 						}
 
-						stack.push(gridArray[p.y][p.x + 2]);
+						
 					}
 				}
 			}
@@ -327,8 +345,27 @@ namespace bridgeit
 							gameState =	STATE_LOSE;
 							break;
 						}
+
+						if (p.y % 2 == 1)
+						{
+							if (p.x > 1)
+							{
+								stack.push(gridArray[p.y][p.x - 2]);
+							}
+
+							if (p.x != BOARD_SIZE - 2)
+							{
+								stack.push(gridArray[p.y][p.x + 2]);
+							}
+						}
+
+
+						if (p.x % 2 == 0)
+						{
+							stack.push(gridArray[p.y + 2][p.x]);
+						}
 						
-						if (p.y != 0)
+						if (p.y > 1)
 						{
 							stack.push(gridArray[p.y - 2][p.x]);
 						}
@@ -343,7 +380,7 @@ namespace bridgeit
 							stack.push(gridArray[p.y + 1][p.x + 1]);
 						}
 
-						stack.push(gridArray[p.y + 2][p.x]);
+						
 
 					}
 				}
