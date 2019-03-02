@@ -372,7 +372,7 @@ ASALocalRun/
 healthchecksdb
 
 # Addition
-Bridge-it.vcxproj
+*.vcxproj
 *.vcxproj.filters
 
 # End of https://www.gitignore.io/api/windows,visualstudio
