@@ -1,4 +1,3 @@
-#include <sstream>
 #include <iostream>
 #include <stack>
 
@@ -76,7 +75,7 @@ namespace bridgeit
 					}
 				}
 			}
-			
+
 		}
 	}
 
@@ -98,13 +97,27 @@ namespace bridgeit
 			}
 			else
 			{
-				if (this->_data->input.isSpriteClicked(this->_gridSprite, sf::Mouse::Left, this->_data->window))
+				if (gameState == STATE_PLAYING)
+				{
+					if (turn == PLAYER_PIECE)
+					{
+						if (this->_data->input.isSpriteClicked(this->_gridSprite, sf::Mouse::Left, this->_data->window))
+						{
+							this->checkAndPlacePiece();
+						}
+					}
+					else
+					{
+						this->checkAndPlacePiece();
+					}
+				}
+				/*if (this->_data->input.isSpriteClicked(this->_gridSprite, sf::Mouse::Left, this->_data->window))
 				{
 					if (STATE_PLAYING == gameState)
 					{
 						this->checkAndPlacePiece();
 					}
-				}
+				}*/
 			}
 		}
 	}
@@ -139,16 +152,16 @@ namespace bridgeit
 		sf::Vector2u tempSpriteSize = this->_data->assets.getTexture("Red Piece").getSize();
 
 		//Initialization of red pieces
-		for (int y = 0; y < BOARD_SIZE; y+=2)
+		for (int y = 0; y < BOARD_SIZE; y += 2)
 		{
-			for (int x = 0; x < BOARD_SIZE; x+=2)
+			for (int x = 0; x < BOARD_SIZE; x += 2)
 			{
 				_gridPieces[y][x].setTexture(this->_data->assets.getTexture("Red Piece"));
 
-				
-				_gridPieces[y][x].setPosition(_gridSprite.getPosition().x + (GRID_OFFSET + CIRCLE_SIZE * (x/2+1) + tempSpriteSize.x*(x/2)),
-				_gridSprite.getPosition().y + (CIRCLE_SIZE * (y/2 + 1) + tempSpriteSize.y*y/2) + GRID_OFFSET);
-							
+
+				_gridPieces[y][x].setPosition(_gridSprite.getPosition().x + (GRID_OFFSET + CIRCLE_SIZE * (x / 2 + 1) + tempSpriteSize.x*(x / 2)),
+					_gridSprite.getPosition().y + (CIRCLE_SIZE * (y / 2 + 1) + tempSpriteSize.y*y / 2) + GRID_OFFSET);
+
 				_gridPieces[y][x].setColor(sf::Color(255, 255, 255, 0));
 			}
 		}
@@ -160,8 +173,8 @@ namespace bridgeit
 			{
 				_gridPieces[y][x].setTexture(this->_data->assets.getTexture("Blue Piece"));
 
-				_gridPieces[y][x].setPosition(_gridSprite.getPosition().x + (GRID_OFFSET + CIRCLE_SIZE * (x/2 + 1) + tempSpriteSize.x * (x/2)+ROW_OFFSET),
-					_gridSprite.getPosition().y + (GRID_OFFSET + CIRCLE_SIZE * (y / 2) + tempSpriteSize.y * y / 2)+SPACE_BETWEEN_ROWS);
+				_gridPieces[y][x].setPosition(_gridSprite.getPosition().x + (GRID_OFFSET + CIRCLE_SIZE * (x / 2 + 1) + tempSpriteSize.x * (x / 2) + ROW_OFFSET),
+					_gridSprite.getPosition().y + (GRID_OFFSET + CIRCLE_SIZE * (y / 2) + tempSpriteSize.y * y / 2) + SPACE_BETWEEN_ROWS);
 
 				_gridPieces[y][x].setColor(sf::Color(255, 255, 255, 0));
 
@@ -171,34 +184,37 @@ namespace bridgeit
 
 	void GameState::checkAndPlacePiece()
 	{
-		int row=-1, column=-1;
-
-		while ((row == -1) && (column == -1))
+		int row = -1, column = -1;
+		
+		if (turn==PLAYER_PIECE)
 		{
-			for (int y = 0; y < BOARD_SIZE; y++)
+			while ((row == -1) && (column == -1))
 			{
-				for (int x = 0; x < BOARD_SIZE; x++)
+				for (int y = 0; y < BOARD_SIZE; y++)
 				{
-					if (this->_data->input.isSpriteClicked(_gridPieces[y][x], sf::Mouse::Button::Left, this->_data->window))
+					for (int x = 0; x < BOARD_SIZE; x++)
 					{
-						row = y;
-						column = x;
+						std::cout << "mouse pressed" << std::endl;
+						if (this->_data->input.isSpriteClicked(_gridPieces[y][x], sf::Mouse::Button::Left, this->_data->window))
+						{
+							row = y;
+							column = x;
+						}
 					}
 				}
 			}
-		}				
 
-		if (gridArray[row][column].value == EMPTY_PIECE)
-		{
-			gridArray[row][column].value = turn;
-		}
-		else
-		{
-			return;
-		}
 
-		if (PLAYER_PIECE == turn)
-		{
+			if (gridArray[row][column].value == EMPTY_PIECE)
+			{
+				gridArray[row][column].value = turn;
+			}
+			else
+			{
+				return;
+			}
+
+
 			if (row % 2 == 1)
 			{
 				_gridPieces[row][column].setTexture(this->_data->assets.getTexture("Red Piece Vertical"));
@@ -208,11 +224,19 @@ namespace bridgeit
 				_gridPieces[row][column].setTexture(this->_data->assets.getTexture("Red Piece"));
 			}
 			gridArray[row][column].value = RED_PIECE;
-			checkHasPlayerWon(turn);
 			turn = AI_PIECE;
 		}
 		else
 		{
+			std::cout << "AI turn before minmax" << std::endl;
+			int score = minimax(gridArray, AI_PIECE, true, 0);
+			std::cout << "Ai turn after minmax";
+			if (score != -1000)
+			{
+				row = best_row;
+				column = best_column;
+			}
+
 			if (row % 2 == 1)
 			{
 				_gridPieces[row][column].setTexture(this->_data->assets.getTexture("Blue Piece"));
@@ -222,13 +246,24 @@ namespace bridgeit
 				_gridPieces[row][column].setTexture(this->_data->assets.getTexture("Blue Piece Vertical"));
 			}
 			gridArray[row][column].value = BLUE_PIECE;
-			checkHasPlayerWon(turn);
 			turn = PLAYER_PIECE;
 		}
 
-		_gridPieces[row][column].setColor(sf::Color(255,255,255,255));
+		_gridPieces[row][column].setColor(sf::Color(255, 255, 255, 255));
 
-		for (int y=0; y < BOARD_SIZE; y++)	//!
+		switch (checkForWinner(gridArray))
+		{
+		case PLAYER_PIECE:
+			gameState = STATE_WON;
+			break;
+		case AI_PIECE:
+			gameState = STATE_LOSE;
+			break;
+		default:
+			break;
+		}
+
+		for (int y = 0; y < BOARD_SIZE; y++)	//!
 		{
 			for (int x = 0; x < BOARD_SIZE; x++)
 			{
@@ -241,12 +276,13 @@ namespace bridgeit
 			std::cout << std::endl;
 		}
 		std::cout << std::endl;
+		//std::getchar();
 	}
 
 
-	void GameState::checkHasPlayerWon(int turn)
+	int GameState::checkForWinner(piece grid[BOARD_SIZE][BOARD_SIZE])
 	{
-		int **was = new int* [BOARD_SIZE];
+		int **was = new int*[BOARD_SIZE];
 		for (int i = 0; i < BOARD_SIZE; i++)
 		{
 			was[i] = new int[BOARD_SIZE];
@@ -262,130 +298,131 @@ namespace bridgeit
 
 		piece p;
 
-		if (turn == PLAYER_PIECE)
+		int winner=0;
+
+		
+		for (int y = 0; y < BOARD_SIZE; y += 2)
 		{
-			for (int y = 0; y < BOARD_SIZE; y += 2)
-			{
-				stack.push(gridArray[y][0]);
-			}
+			stack.push(grid[y][0]);
+		}
 
-			while (!stack.empty())
+		while (!stack.empty())
+		{
+			p = stack.top();
+			std::cout << "p = " << p.value << std::endl;
+			stack.pop();
+			if (grid[p.y][p.x].value == RED_PIECE)
 			{
-				p = stack.top();
-				std::cout << "p = " << p.value << std::endl;
-				stack.pop();
-				if (gridArray[p.y][p.x].value == RED_PIECE)
+				if (was[p.y][p.x] == EMPTY_PIECE)
 				{
-					if (was[p.y][p.x] == EMPTY_PIECE)
+					was[p.y][p.x] = CLOSED_PIECE;
+					if (p.x == BOARD_SIZE - 1)
 					{
-						was[p.y][p.x] = CLOSED_PIECE;
-						if (p.x == BOARD_SIZE - 1)
+						winner = PLAYER_PIECE;
+						return winner;
+					}
+
+					if (p.x % 2 == 1)
+					{
+						if (p.y > 1)
 						{
-							gameState = STATE_WON;
-							break;
+							stack.push(grid[p.y - 2][p.x]);
 						}
 
-						if (p.x % 2 == 1)
+						if (p.y != BOARD_SIZE - 2)
 						{
-							if (p.y > 1)
-							{
-								stack.push(gridArray[p.y - 2][p.x]);
-							}
+							stack.push(grid[p.y + 2][p.x]);
+						}
+					}
 
-							if (p.y != BOARD_SIZE - 2)
-							{
-								stack.push(gridArray[p.y + 2][p.x]);
-							}
+					if (p.y % 2 == 0)
+					{
+						stack.push(grid[p.y][p.x + 2]);
+					}
+
+					if (p.x > 1)
+					{
+						stack.push(grid[p.y][p.x - 2]);
+					}
+
+					if (p.y != BOARD_SIZE - 1)
+					{
+						stack.push(grid[p.y + 1][p.x + 1]);
+					}
+
+					if (p.y != 0)
+					{
+						stack.push(grid[p.y - 1][p.x + 1]);
+					}
+
+
+				}
+			}
+		}
+
+		
+
+		for (int x = 0; x < BOARD_SIZE; x += 2)
+		{
+			stack.push(gridArray[0][x]);
+		}
+
+		while (!stack.empty())
+		{
+			p = stack.top();
+			std::cout << "p = " << p.value << std::endl;
+			stack.pop();
+			if (gridArray[p.y][p.x].value == BLUE_PIECE)
+			{
+				if (was[p.y][p.x] == EMPTY_PIECE)
+				{
+					was[p.y][p.x] = CLOSED_PIECE;
+					if (p.y == BOARD_SIZE - 1)
+					{
+						winner = AI_PIECE;
+						return winner;
+					}
+
+					if (p.y % 2 == 1)
+					{
+						if (p.x > 1)
+						{
+							stack.push(gridArray[p.y][p.x - 2]);
 						}
 
-						if (p.y % 2 == 0)
+						if (p.x != BOARD_SIZE - 2)
 						{
 							stack.push(gridArray[p.y][p.x + 2]);
 						}
-
-						if (p.x > 1)
-						{
-							stack.push(gridArray[p.y][p.x - 2]);						
-						}
-
-						if (p.y != BOARD_SIZE - 1)
-						{
-							stack.push(gridArray[p.y + 1][p.x + 1]);
-						}
-
-						if (p.y != 0)
-						{
-							stack.push(gridArray[p.y - 1][p.x + 1]);
-						}
-
-						
 					}
-				}
-			}
-		}
-		else
-		{
-			for (int x = 0; x < BOARD_SIZE; x += 2)
-			{
-				stack.push(gridArray[0][x]);
-			}
 
-			while (!stack.empty())
-			{
-				p = stack.top();
-				std::cout << "p = " << p.value << std::endl;
-				stack.pop();
-				if (gridArray[p.y][p.x].value == BLUE_PIECE)
-				{
-					if (was[p.y][p.x] == EMPTY_PIECE)
+
+					if (p.x % 2 == 0)
 					{
-						was[p.y][p.x] = CLOSED_PIECE;
-						if (p.y == BOARD_SIZE - 1)
-						{
-							gameState =	STATE_LOSE;
-							break;
-						}
-
-						if (p.y % 2 == 1)
-						{
-							if (p.x > 1)
-							{
-								stack.push(gridArray[p.y][p.x - 2]);
-							}
-
-							if (p.x != BOARD_SIZE - 2)
-							{
-								stack.push(gridArray[p.y][p.x + 2]);
-							}
-						}
-
-
-						if (p.x % 2 == 0)
-						{
-							stack.push(gridArray[p.y + 2][p.x]);
-						}
-						
-						if (p.y > 1)
-						{
-							stack.push(gridArray[p.y - 2][p.x]);
-						}
-
-						if (p.x != 0)
-						{
-							stack.push(gridArray[p.y + 1][p.x - 1]);
-						}
-
-						if (p.x != BOARD_SIZE - 1)
-						{
-							stack.push(gridArray[p.y + 1][p.x + 1]);
-						}
-
-						
-
+						stack.push(gridArray[p.y + 2][p.x]);
 					}
+
+					if (p.y > 1)
+					{
+						stack.push(gridArray[p.y - 2][p.x]);
+					}
+
+					if (p.x != 0)
+					{
+						stack.push(gridArray[p.y + 1][p.x - 1]);
+					}
+
+					if (p.x != BOARD_SIZE - 1)
+					{
+						stack.push(gridArray[p.y + 1][p.x + 1]);
+					}
+
+
+
 				}
 			}
 		}
+
 
 		std::cout << gameState << std::endl;	//!
 		for (int i = 0; i < BOARD_SIZE; i++)
@@ -393,7 +430,125 @@ namespace bridgeit
 			delete[] was[i];
 		}
 		delete[] was;
+		return winner;
 	}
+
+	//double GameState::rating(int r, int c, int stone, int coef)// рейтинг клетки
+	//{
+	//	int i, j;
+	//	double count = 1;
+	//	double ret = 0;
+	//	for (i = r; i > r - 4 && i >= 0; i--)					// возможный ряд по вертикали
+	//		if (gridArray[i][c].value == RED_PIECE || gridArray[i][c].value == BLUE_PIECE)
+	//			count++;
+	//		else {
+	//			if (_mPlayField[i][c] != 0)					// ряд ограничен
+	//				count = 1;
+	//			break;
+	//		}
+	//	for (i = r + 1; i < r + 5 && i < 15; i++)					// возможный ряд по вертикали
+	//		if (_mPlayField[i][c] == stone || _mPlayField[i][c] == stone + 1)
+	//			count++;
+	//		else {
+	//			if (_mPlayField[i][c] != 0)					// ряд ограничен
+	//				count = 1;
+	//			break;
+	//		}
+	//	if (count >= 5)										// победный ход
+	//		count = coef;
+	//	if (count > 1)										// накапливаем оценку
+	//		ret += exp(count);
+	//	count = 1;
+	//	for (j = c - 1; j > c - 5 && j >= 0; j--)					// возможный ряд по горизонтали
+	//		if (_mPlayField[r][j] == stone || _mPlayField[r][j] == stone + 1)
+	//			count++;
+	//		else {
+	//			if (_mPlayField[r][j] != 0)					// ряд ограничен
+	//				count = 1;
+	//			break;
+	//		}
+	//	for (j = c + 1; j < c + 5 && j < 15; j++)					// возможный ряд по вертикали
+	//		if (_mPlayField[r][j] == stone || _mPlayField[r][j] == stone + 1)
+	//			count++;
+	//		else {
+	//			if (_mPlayField[r][j] != 0)					// ряд ограничен
+	//				count = 1;
+	//			break;
+	//		}
+	//	if (count >= 5)										// победный ход
+	//		count = coef;
+	//	if (count > 1)										// накапливаем оценку
+	//		ret += exp(count);
+	//	count = 1;											// возможный ряд по \ диагонали
+	//	
+	//}
+
+
+
+	int GameState::minimax(piece hypothetical_board[BOARD_SIZE][BOARD_SIZE], int player, bool mymove, int depth)
+	{
+		int i, j, score;
+
+		// if we have gone too deep, return;
+		if (depth > MAX_DEPTH)
+			return 0;
+
+		// see if someone has won
+		int winner = checkForWinner(hypothetical_board);
+		if (winner != 0)
+		{
+			return winner;
+		}
+
+		int move_row = -1;
+		int move_col = -1;
+		if (mymove)
+			score = -2; //Losing moves are preferred to no move
+		else
+			score = 2;
+
+		// For all possible locations (moves),
+		for (i = 0; i < BOARD_SIZE; i++) //Change increment
+		{
+			for (j = i % 2; j < BOARD_SIZE; j+=2) //Change increment
+			{
+				if (hypothetical_board[i][j].value == EMPTY_PIECE)
+				{
+					// If this is a legal move,
+					hypothetical_board[i][j].value = player; //Try the move
+					int thisScore = minimax(hypothetical_board, -1 * player, !mymove, depth + 1);
+
+					if (mymove)
+					{
+						// my move, so maximize the score          
+						if (thisScore > score) {
+							score = thisScore;
+							move_row = i;
+							move_col = j;
+						}
+					}
+					else
+					{
+						// not my move, so minimize the score
+						if (thisScore < score) {
+							score = thisScore;
+							move_row = i;
+							move_col = j;
+						}
+					}
+					hypothetical_board[i][j].value = EMPTY_PIECE;//Reset board after try
+				}
+			}
+		}
+		if (move_row == -1) return 0;  // no valid moves, so it is a tie.
+		best_row = move_row;
+		best_column = move_col;
+		return score;
+	}
+
 }
+
+
+
 
 

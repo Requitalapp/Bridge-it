@@ -29,9 +29,9 @@
 #define RETRY_BUTTON "Resources/Retry Button.png"
 
 #define RED_PIECE 1
-#define BLUE_PIECE 2
+#define BLUE_PIECE -1
 #define EMPTY_PIECE 0
-#define CLOSED_PIECE -1
+#define CLOSED_PIECE 2
 #define PLAYER_PIECE RED_PIECE
 #define AI_PIECE BLUE_PIECE
 
@@ -48,3 +48,4 @@
 #define GRID_OFFSET 10
 #define SPACE_BETWEEN_ROWS 30
 #define BOARD_SIZE 9
+#define MAX_DEPTH 5

@@ -18,11 +18,21 @@ namespace bridgeit
 		void draw(float dt);
 
 	private:
+		struct piece
+		{
+			int value;
+			int x, y;
+		};
+
 		void initGridPieces();
 
 		void checkAndPlacePiece();
 
-		void checkHasPlayerWon(int turn);
+		int checkForWinner(piece grid[BOARD_SIZE][BOARD_SIZE]);
+
+		double rating(int r, int c, int stone, int coef);
+
+		int minimax(piece hypothetical_board[BOARD_SIZE][BOARD_SIZE], int player, bool mymove, int depth);
 
 		GameDataRef _data;
 
@@ -32,16 +42,11 @@ namespace bridgeit
 
 		sf::Sprite _gridSprite;
 
-		struct piece
-		{
-			int value;
-			int x, y;
-		};
-
 		sf::Sprite _gridPieces[BOARD_SIZE][BOARD_SIZE];
 		piece gridArray[BOARD_SIZE][BOARD_SIZE];
 
 		int turn;
 		int gameState;
+		int best_row, best_column;
 	};
 }
