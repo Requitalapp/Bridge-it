@@ -24,15 +24,24 @@ namespace bridgeit
 			int x, y;
 		};
 
+		/*struct possibleMove
+		{
+			int x=-5, y=-5;
+		};*/
+
 		void initGridPieces();
 
 		void checkAndPlacePiece();
 
-		int checkForWinner(piece grid[BOARD_SIZE][BOARD_SIZE]);
+		int getPathLength(int player);
+
+		void deleteIntArray(int **array);
+
+		void getPossibleMoves(std::vector <std::vector<int> >& possibleMoves, int x, int y, int player);
 
 		double rating(int r, int c, int stone, int coef);
 
-		int minimax(piece hypothetical_board[BOARD_SIZE][BOARD_SIZE], int player, bool mymove, int depth);
+		int minimax(int player, int depth , int alpha, int beta);
 
 		GameDataRef _data;
 

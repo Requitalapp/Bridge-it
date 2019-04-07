@@ -48,4 +48,4 @@
 #define GRID_OFFSET 10
 #define SPACE_BETWEEN_ROWS 30
 #define BOARD_SIZE 9
-#define MAX_DEPTH 5
+#define MAX_DEPTH 2
